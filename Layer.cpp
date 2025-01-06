@@ -9,10 +9,10 @@
 #include "stdexcept"
 
 Layer::Layer(int inputSize, int outputSize, const std::function<double(double)>& activation, const std::function<double(double)>& derivative):
-weights(Matrix::random(outputSize, inputSize, -1.0, 1.0)),
-biases(Matrix::zeros(outputSize, 1)) {
-    // Xavier intialization for stable gradients
-    double scalingFactor = std::sqrt(2.0 / (inputSize + outputSize));
+    weights(Matrix::random(outputSize, inputSize, -1.0, 1.0)),
+    biases(Matrix::zeros(outputSize, 1)) {
+    // He initialization for ReLU activations
+    double scalingFactor = std::sqrt(2.0 / inputSize);
     weights = weights * scalingFactor;
     this->activationFunc = activation;
     this->activationDerivative = derivative;
@@ -52,7 +52,6 @@ std::tuple<Matrix, Matrix, Matrix> Layer::backward(const Matrix& dA, const Matri
     // Compute gradients
     Matrix dW = dZ * A_prev.transpose();
     Matrix db = Matrix(biases.getRows(), 1);
-
     // Sum across samples for bias gradients
     for (int i = 0; i < dZ.getRows(); ++i) {
         double sum = 0;

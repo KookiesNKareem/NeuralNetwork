@@ -24,14 +24,17 @@ void NeuralNetwork::addLayer(int inputSize, int outputSize,
 }
 
 Matrix NeuralNetwork::forward(const Matrix& inputs) {
+    activations.clear();
+    activations.push_back(inputs);
     Matrix output = inputs;
     for (auto& layer : layers) {
         output = layer.forward(output);
+        activations.push_back(output);
     }
     return output;
 }
 
-void NeuralNetwork::backward(const Matrix& yTrue, const Matrix& yPred, const Matrix& inputs) {
+void NeuralNetwork::backward(const Matrix& yTrue, const Matrix& yPred, const Matrix& inputs, const std::string& lossType) {
     std::vector<Matrix> activations;
     activations.push_back(inputs);
 
@@ -42,7 +45,16 @@ void NeuralNetwork::backward(const Matrix& yTrue, const Matrix& yPred, const Mat
         activations.push_back(current);
     }
 
-    Matrix dLoss = Loss::mseDerivative(yTrue, yPred);
+    Matrix dLoss;
+
+    if (lossType == "mse") {
+        dLoss = Loss::mseDerivative(yTrue, yPred);
+    } else if (lossType == "crossentropy") {
+        dLoss = Loss::crossEntropyDerivative(yTrue, yPred);
+    } else {
+        throw std::invalid_argument("Unsupported loss type");
+    }
+
 
     for (int i = layers.size() - 1; i >= 0; --i) {
         auto [dW, db, dA_prev] = layers[i].backward(dLoss, activations[i]);
@@ -55,11 +67,6 @@ void NeuralNetwork::train(const Matrix& X, const Matrix& y, int epochs, const st
     for (int epoch = 0; epoch < epochs; ++epoch) {
 
         Matrix yPred = forward(X);
-        for (size_t i = 0; i < layers.size(); ++i) {
-            std::cout << "Layer " << i + 1 << ": "
-                      << "Weights Dimensions: " << layers[i].getWeights().getRows() << "x" << layers[i].getWeights().getCols()
-                      << ", Biases Dimensions: " << layers[i].getBiases().getRows() << "x" << layers[i].getBiases().getCols() << std::endl;
-        }
 
         double loss;
 
@@ -71,7 +78,7 @@ void NeuralNetwork::train(const Matrix& X, const Matrix& y, int epochs, const st
             throw std::invalid_argument("Unsupported loss type");
         }
 
-        backward(y, yPred, X);
+        backward(y, yPred, X, lossType);
 
         std::cout << "Epoch " << epoch + 1 << "/" << epochs << " - Loss: " << loss << std::endl;
     }

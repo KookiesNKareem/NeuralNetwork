@@ -279,3 +279,27 @@ Matrix Matrix::operator/(const Matrix& other) const {
   }
   return result;
 }
+
+Matrix Matrix::operator-(double scalar) const {
+  Matrix result(this->rows, this->cols);
+  for (int i = 0; i < this->rows; i++) {
+    for (int j = 0; j < this->cols; j++) {
+      result.data[i][j] = this->data[i][j] - scalar;
+    }
+  }
+  return result;
+}
+
+double Matrix::mean() const{
+  double sum = 0.0;
+  size_t totalElements = rows * cols;
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < cols; ++j) {
+      sum += data[i][j];
+    }
+  }
+  if (totalElements == 0) {
+    throw std::runtime_error("Matrix has no elements, cannot compute mean.");
+  }
+  return sum / totalElements;
+}

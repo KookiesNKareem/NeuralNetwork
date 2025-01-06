@@ -27,6 +27,7 @@ public:
     Matrix dot(const Matrix& other) const;
     Matrix operator*(double scalar) const;
     Matrix operator/(double scalar) const;
+    Matrix operator-(double scalar) const;
     Matrix operator/(const Matrix& other) const;
 
     Matrix transpose() const;
@@ -38,6 +39,21 @@ public:
     static Matrix normalize(const Matrix& data);
     static Matrix standardize(const Matrix& data);
 
+    double mean() const;
+
+    std::vector<double>& operator[](size_t row) {
+        if (row >= rows) {
+            throw std::out_of_range("Row index out of bounds.");
+        }
+        return data[row];
+    }
+
+    const std::vector<double>& operator[](size_t row) const {
+        if (row >= rows) {
+            throw std::out_of_range("Row index out of bounds.");
+        }
+        return data[row];
+    }
 };
 
 
